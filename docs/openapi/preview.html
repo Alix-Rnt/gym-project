@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>API Preview</title>
+    <style>
+      body { margin: 0; font-family: sans-serif; }
+      #menu { padding: 12px 24px; background: #1a1a1a; display: flex; gap: 12px; }
+      #menu button { padding: 8px 16px; background: transparent; color: white; border: 1px solid #555; border-radius: 6px; cursor: pointer; }
+      #menu button.active { background: white; color: black; }
+    </style>
+  </head>
+  <body>
+    <div id="menu">
+      <button class="active" onclick="load('requests/user-service.yml', this)">User</button>
+      <button onclick="load('requests/catalog-service.yml', this)">Catalog</button>
+      <button onclick="load('requests/booking-service.yml', this)">Booking</button>
+      <button onclick="load('requests/notification-service.yml', this)">Notification</button>
+    </div>
+    <div id="redoc"></div>
+    <script src="https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js"></script>
+    <script>
+      function load(yaml, btn) {
+        document.querySelectorAll('#menu button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        Redoc.init(yaml, {}, document.getElementById('redoc'));
+      }
+      load('requests/user-service.yml', document.querySelector('#menu button'));
+    </script>
+  </body>
+</html>

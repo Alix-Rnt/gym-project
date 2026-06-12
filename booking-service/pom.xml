@@ -6,7 +6,7 @@
 
   <groupId>com.arnt</groupId>
   <artifactId>booking-service</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.1.0-SNAPSHOT</version>
 
   <name>booking-service</name>
   <!-- FIXME change it to the project's website -->

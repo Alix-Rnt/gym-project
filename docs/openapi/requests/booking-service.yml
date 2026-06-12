@@ -1,0 +1,340 @@
+openapi: 3.0.3
+info:
+  title: Booking Service
+  description: Gestion des abonnements et des listes d'attente
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:8083
+    description: Serveur local
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SubscriptionStatus:
+      type: string
+      enum:
+        - VALID
+        - EXPIRED
+
+paths:
+  /subscriptions:
+    get:
+      summary: Lister les abonnements
+      tags:
+        - Subscriptions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: memberId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filtrer par membre
+        - name: planningId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filtrer par créneau
+      responses:
+        '200':
+          description: Liste des abonnements
+        '401':
+          description: Non authentifié
+    post:
+      summary: Créer un abonnement
+      tags:
+        - Subscriptions
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - price
+                - status
+              properties:
+                price:
+                  type: number
+                  format: float
+                status:
+                  $ref: '#/components/schemas/SubscriptionStatus'
+                planningIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '201':
+          description: Abonnement créé
+        '400':
+          description: Données invalides
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+
+  /subscriptions/{id}:
+    get:
+      summary: Récupérer un abonnement
+      tags:
+        - Subscriptions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Abonnement trouvé
+        '401':
+          description: Non authentifié
+        '404':
+          description: Abonnement introuvable
+    put:
+      summary: Modifier un abonnement
+      tags:
+        - Subscriptions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                price:
+                  type: number
+                  format: float
+                status:
+                  $ref: '#/components/schemas/SubscriptionStatus'
+      responses:
+        '200':
+          description: Abonnement modifié
+        '400':
+          description: Données invalides
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Abonnement introuvable
+    delete:
+      summary: Supprimer un abonnement
+      tags:
+        - Subscriptions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Abonnement supprimé
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Abonnement introuvable
+
+  /subscriptions/{id}/subscribe:
+    post:
+      summary: Souscrire à un abonnement
+      tags:
+        - Subscriptions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Souscription effectuée
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Abonnement introuvable
+        '409':
+          description: Déjà souscrit à cet abonnement
+
+  /subscriptions/{id}/unsubscribe:
+    delete:
+      summary: Se désinscrire d'un abonnement
+      tags:
+        - Subscriptions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Désinscription effectuée et remboursement initié
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Abonnement introuvable
+        '409':
+          description: Non souscrit à cet abonnement
+
+  /waitlists:
+    get:
+      summary: Lister les listes d'attente
+      tags:
+        - Waitlists
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: memberId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filtrer par membre
+      responses:
+        '200':
+          description: Liste des listes d'attente
+        '401':
+          description: Non authentifié
+  /waitlists/{planningId}:
+    get:
+      summary: Consulter la liste d'attente d'un créneau
+      tags:
+        - Waitlists
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: planningId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Liste d'attente (member voit sa position et le total, admin voit tout)
+        '401':
+          description: Non authentifié
+        '404':
+          description: Créneau introuvable
+
+  /waitlists/{planningId}/join:
+    post:
+      summary: Rejoindre la liste d'attente
+      tags:
+        - Waitlists
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: planningId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ajouté à la liste d'attente
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Créneau introuvable
+        '409':
+          description: Déjà dans la liste d'attente
+
+  /waitlists/{planningId}/leave:
+    delete:
+      summary: Se retirer de la liste d'attente
+      tags:
+        - Waitlists
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: planningId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Retiré de la liste d'attente
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Créneau introuvable
+
+  /waitlists/{planningId}/{memberId}:
+    delete:
+      summary: Retirer un membre de la liste d'attente
+      tags:
+        - Waitlists
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: planningId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Membre retiré de la liste d'attente
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Créneau ou membre introuvable

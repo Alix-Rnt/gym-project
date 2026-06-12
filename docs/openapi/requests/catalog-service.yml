@@ -1,0 +1,304 @@
+openapi: 3.0.3
+info:
+  title: Catalog Service
+  description: Gestion des cours et des créneaux de cours
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:8082
+    description: Serveur local
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    PlanningStatus:
+      type: string
+      enum:
+        - SCHEDULED
+        - CANCELLED
+        - FULL
+
+paths:
+  /lessons:
+    get:
+      summary: Lister tous les cours
+      tags:
+        - Lessons
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des cours
+        '401':
+          description: Non authentifié
+    post:
+      summary: Créer un cours
+      tags:
+        - Lessons
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - description
+                - duration
+                - type
+                - coachId
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                duration:
+                  type: integer
+                  description: Durée en minutes
+                type:
+                  type: string
+                coachId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Cours créé
+        '400':
+          description: Données invalides
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+
+  /lessons/{id}:
+    get:
+      summary: Récupérer un cours
+      tags:
+        - Lessons
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Cours trouvé
+        '401':
+          description: Non authentifié
+        '404':
+          description: Cours introuvable
+    put:
+      summary: Modifier un cours
+      tags:
+        - Lessons
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                duration:
+                  type: integer
+                type:
+                  type: string
+                coachId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Cours modifié
+        '400':
+          description: Données invalides
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Cours introuvable
+    delete:
+      summary: Supprimer un cours
+      tags:
+        - Lessons
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Cours supprimé
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Cours introuvable
+
+  /plannings:
+    get:
+      summary: Lister tous les créneaux
+      tags:
+        - Plannings
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des créneaux
+        '401':
+          description: Non authentifié
+    post:
+      summary: Créer un créneau
+      tags:
+        - Plannings
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - date
+                - time
+                - capacity
+                - status
+                - lessonId
+              properties:
+                date:
+                  type: string
+                  format: date
+                time:
+                  type: string
+                  format: time
+                capacity:
+                  type: integer
+                status:
+                  $ref: '#/components/schemas/PlanningStatus'
+                lessonId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Créneau créé
+        '400':
+          description: Données invalides
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+
+  /plannings/{id}:
+    get:
+      summary: Récupérer un créneau
+      tags:
+        - Plannings
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Créneau trouvé
+        '401':
+          description: Non authentifié
+        '404':
+          description: Créneau introuvable
+    put:
+      summary: Modifier un créneau
+      tags:
+        - Plannings
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                time:
+                  type: string
+                  format: time
+                capacity:
+                  type: integer
+                status:
+                  $ref: '#/components/schemas/PlanningStatus'
+                lessonId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Créneau modifié
+        '400':
+          description: Données invalides
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Créneau introuvable
+    delete:
+      summary: Supprimer un créneau
+      tags:
+        - Plannings
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Créneau supprimé
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Créneau introuvable

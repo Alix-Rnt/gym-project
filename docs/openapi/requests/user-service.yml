@@ -1,0 +1,527 @@
+openapi: 3.0.3
+info:
+  title: User Service
+  description: Gestion des utilisateurs, authentification et autorisations
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:8081
+    description: Serveur local
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Professions:
+      type: string
+      enum:
+        - YOGA
+        - FITNESS
+        - PILATES
+
+paths:
+  /auth/register:
+    post:
+      summary: Inscription d'un membre
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+                - firstName
+                - lastName
+                - email
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '201':
+          description: Utilisateur créé avec succès
+        '400':
+          description: Données invalides ou manquantes
+        '409':
+          description: Email déjà utilisé
+  
+  /auth/login:
+    post:
+      summary: Connexion d'un utilisateur
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Utilisateur connecté avec succès
+        '400':
+          description: Données invalides ou manquantes
+        '401':
+          description: Username ou password incorrects
+  
+  /auth/logout:
+    post:
+      summary: Deconnexion d'un utilisateur
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Utilisateur déconnecté avec succès
+        '401':
+          description: Token invalide ou expiré
+
+  /auth/refresh:
+    post:
+      summary: Renouveler le token d'accès
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Nouveau token retourné
+        '401':
+          description: Token invalide ou expiré
+  /members:
+    get:
+      summary: Lister tous les membres
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des membres
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+    post:
+      summary: Créer un membre
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+                - firstName
+                - lastName
+                - email
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '201':
+          description: Membre créé
+        '400':
+          description: Données invalides
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+
+  /members/{id}:
+    get:
+      summary: Récupérer un membre
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Membre trouvé
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Membre introuvable
+    put:
+      summary: Modifier un membre
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Membre modifié
+        '400':
+          description: Données invalides
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Membre introuvable
+    delete:
+      summary: Supprimer un membre
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Membre supprimé
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Membre introuvable
+
+  /coaches:
+    get:
+      summary: Lister tous les coaches
+      tags:
+        - Coaches
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des coaches
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+    post:
+      summary: Créer un coach
+      tags:
+        - Coaches
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+                - firstName
+                - lastName
+                - email
+                - professions
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                professions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Professions'
+      responses:
+        '201':
+          description: Coach créé
+        '400':
+          description: Données invalides
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+
+  /coaches/{id}:
+    get:
+      summary: Récupérer un coach
+      tags:
+        - Coaches
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Coach trouvé
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Coach introuvable
+    put:
+      summary: Modifier un coach
+      tags:
+        - Coaches
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                professions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Professions'
+      responses:
+        '200':
+          description: Coach modifié
+        '400':
+          description: Données invalides
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Coach introuvable
+    delete:
+      summary: Supprimer un coach
+      tags:
+        - Coaches
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Coach supprimé
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Coach introuvable
+
+  /admins:
+    get:
+      summary: Lister tous les admins
+      tags:
+        - Admins
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des admins
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+    post:
+      summary: Créer un admin
+      tags:
+        - Admins
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: Admin créé
+        '400':
+          description: Données invalides
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+
+  /admins/{id}:
+    get:
+      summary: Récupérer un admin
+      tags:
+        - Admins
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Admin trouvé
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Admin introuvable
+    put:
+      summary: Modifier un admin
+      tags:
+        - Admins
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Admin modifié
+        '400':
+          description: Données invalides
+        '401':
+          description: Non authentifié
+        '403':
+          description: Non autorisé
+        '404':
+          description: Admin introuvable
+    delete:
+      summary: Supprimer un admin
+      tags:
+        - Admins
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Admin supprimé
+        '401':
+          description: Non
