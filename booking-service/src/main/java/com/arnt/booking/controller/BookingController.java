@@ -20,9 +20,9 @@ import com.arnt.booking.dto.SubscriptionDTO;
 import com.arnt.booking.dto.WaitlistDTO;
 import com.arnt.booking.entities.Subscription;
 import com.arnt.booking.entities.Waitlist;
+import com.arnt.booking.enums.SubscriptionStatus;
 import com.arnt.booking.services.SubscriptionService;
 import com.arnt.booking.services.WaitlistService;
-import com.arnt.booking.status.SubscriptionStatus;
 
 @RestController
 @RequestMapping("/api/booking")
@@ -36,7 +36,9 @@ public class BookingController {
      * @param subscriptionService
      * @param waitlistService
      */
-    public BookingController(SubscriptionService subscriptionService, WaitlistService waitlistService) {
+    public BookingController(
+            SubscriptionService subscriptionService,
+            WaitlistService waitlistService) {
         this.subscriptionService = subscriptionService;
         this.waitlistService = waitlistService;
     }
@@ -145,10 +147,12 @@ public class BookingController {
      * @param id the Subscription id
      * @param planningId the planning id
      * @return the updated Subscription
+     * @throws InterruptedException 
+     * @throws IOException 
      */
     @PostMapping("/subscriptions/{id}/plannings/{planningId}")
     @ResponseStatus(HttpStatus.OK)
-    public Subscription addPlanning(@PathVariable UUID id, @PathVariable UUID planningId) {
+    public Subscription addPlanning(@PathVariable UUID id, @PathVariable UUID planningId) throws IOException, InterruptedException {
         return subscriptionService.addPlanning(id, planningId);
     }
 

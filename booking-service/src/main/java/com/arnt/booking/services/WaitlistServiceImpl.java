@@ -7,6 +7,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,7 @@ import com.arnt.booking.dto.WaitlistDTO;
 import com.arnt.booking.entities.Waitlist;
 import com.arnt.booking.exceptions.MemberNotFoundException;
 import com.arnt.booking.exceptions.SubscriptionNotFoundException;
+import com.arnt.booking.exceptions.WaitlistEmptyException;
 import com.arnt.booking.exceptions.WaitlistNotFoundException;
 import com.arnt.booking.repositories.WaitlistRepository;
 
@@ -71,6 +73,12 @@ public class WaitlistServiceImpl implements WaitlistService {
     }
 
     @Override
+    public Integer getMemberAmount(UUID id) {
+        Waitlist waitlist = this.get(id);
+        return waitlist.getMembersTimestamp().size();
+    }
+
+    @Override
     public Waitlist getBySubscriptionId(UUID id) {
         return waitlistRepository
                 .findBySubscriptionId(id)
@@ -91,6 +99,26 @@ public class WaitlistServiceImpl implements WaitlistService {
         Waitlist waitlist = this.get(id);
         waitlist.getMembersTimestamp().remove(memberId);
         waitlistRepository.save(waitlist);
+    }
+
+    @Override
+    public void addMemberBySubscriptionId(UUID subscriptionId, UUID memberId) throws IOException, InterruptedException {
+        Waitlist waitlist = this.getBySubscriptionId(subscriptionId);
+        this.addMember(waitlist.getId(), memberId);
+    }
+
+    @Override
+    public UUID popMember(UUID id) {
+        Waitlist waitlist = this.get(id);
+        UUID memberID = waitlist.getMembersTimestamp().entrySet().stream()
+                .min(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElseThrow(() -> new WaitlistEmptyException(id));
+
+        waitlist.getMembersTimestamp().remove(memberID);
+        waitlistRepository.save(waitlist);
+
+        return memberID;
     }
 
     /**
