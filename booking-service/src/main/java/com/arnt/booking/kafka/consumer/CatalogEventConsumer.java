@@ -15,6 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 public class CatalogEventConsumer {
     private final SubscriptionService subscriptionService;
 
+    /**
+     * Consumed when a Planning is cancelled.
+     * 
+     * @param event PlanningCancelledEvent
+     */
     @KafkaListener(topics = "catalog.planning.cancelled", groupId = "booking-service")
     public void onCourseCancelled(PlanningCancelledEvent event) {
         log.info("Planning cancelled recieved : planningId={}", event.planningID());

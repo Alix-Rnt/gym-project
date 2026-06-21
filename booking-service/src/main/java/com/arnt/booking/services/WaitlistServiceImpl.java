@@ -49,9 +49,7 @@ public class WaitlistServiceImpl implements WaitlistService {
     public Waitlist save(WaitlistDTO dto) {
         Waitlist waitlist = dto.toEntity();
 
-        waitlistRepository.save(waitlist);
-
-        return waitlist;
+        return waitlistRepository.save(waitlist);
     }
 
     @Override
@@ -61,9 +59,7 @@ public class WaitlistServiceImpl implements WaitlistService {
         waitlist.setMembersTimestamp(dto.getMembersTimestamp());
         waitlist.setSubscriptionID(dto.getSubscriptionID());
 
-        waitlistRepository.save(waitlist);
-
-        return waitlist;
+        return waitlistRepository.save(waitlist);
     }
 
     @Override
@@ -124,17 +120,17 @@ public class WaitlistServiceImpl implements WaitlistService {
     /**
      * Checks if Member refered in id is valid.
      * 
-     * @param id the Member id
+     * @param memberID the Member id
      * @throws IOException
      * @throws InterruptedException
      */
-    private void validateMember(UUID id) throws IOException, InterruptedException {
+    private void validateMember(UUID memberID) throws IOException, InterruptedException {
         HttpRequest userRequest = HttpRequest.newBuilder()
-                .uri(URI.create(userServiceUrl + "/api/user/members/" + id))
+                .uri(URI.create(userServiceUrl + "/api/user/members/" + memberID))
                 .GET()
                 .build();
         if (httpClient.send(userRequest, HttpResponse.BodyHandlers.ofString()).statusCode() == 404) {
-            throw new MemberNotFoundException(id);
+            throw new MemberNotFoundException(memberID);
         }
     }
 

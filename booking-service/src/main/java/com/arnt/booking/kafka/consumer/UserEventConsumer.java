@@ -15,17 +15,33 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class MemberEventConsumer {
+public class UserEventConsumer {
+    private static final String SERVICE_NAME = "user-service";
+
     private final SubscriptionService subscriptionService;
 
-    @KafkaListener(topics = "member.subscription.subscribe", groupId = "user-service")
+    /**
+     * Consumed when a Member subscribes from a Subscription.
+     * 
+     * @param event MemberSubscribedEvent
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    @KafkaListener(topics = "member.subscription.subscribe", groupId = SERVICE_NAME)
     public void onMemberSubscribe(MemberSubscribedEvent event) throws IOException, InterruptedException {
         log.info("Member subsciption recieved : memberId = {} ; subscriptionId = {}", event.memberID(), event.subscriptionID());
 
         subscriptionService.addMember(event.memberID(), event.subscriptionID());
     }
 
-    @KafkaListener(topics = "member.subscription.unsubscribe", groupId = "user-service")
+    /**
+     * Consumed when a Member unsubscribes from a Subscription.
+     * 
+     * @param event MemberUnsubscribedEvent
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    @KafkaListener(topics = "member.subscription.unsubscribe", groupId = SERVICE_NAME)
     public void onMemberUnsubscribe(MemberUnsubscribedEvent event) throws IOException, InterruptedException {
         log.info("Member unsubsciption recieved : memberId = {} ; subscriptionId = {}", event.memberID(), event.subscriptionID());
 

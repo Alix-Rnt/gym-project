@@ -37,7 +37,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     private final BookingEventProducer producer;
 
-    @Value("$(catalog.service.ulr)")
+    @Value("$(catalog.service.url)")
     private String catalogServiceUrl;
 
     public SubscriptionServiceImpl(
@@ -103,13 +103,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         if (status == SubscriptionStatus.EXPIRED) {
             producer.publishSubscriptionExpired(
-                new SubscriptionExpiredEvent(id, subscription.getMembersID())
+                new SubscriptionExpiredEvent(id, subscription.getName(), subscription.getMembersID())
             );
         }
 
         if (status == SubscriptionStatus.INVALID) {
             producer.publishSubscriptionInvalidated(
-                new SubscriptionInvalidatedEvent(id, subscription.getMembersID())
+                new SubscriptionInvalidatedEvent(id, subscription.getName(), subscription.getMembersID())
             );
         }
 
@@ -165,7 +165,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             this.addMember(id, popedMemberID);
 
             producer.publishWaitlistPromoted(
-                new WaitlistPromotedEvent(waitlist.getId(), popedMemberID, id)
+                new WaitlistPromotedEvent(waitlist.getId(), popedMemberID, subscription.getName())
             );
         }
 
@@ -220,7 +220,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     /**
-     * Makes a REST request to get the Planning dateTime.
+     * Make a REST request to get the Planning dateTime.
      * 
      * @param planningID the Planning id
      * @return the Planning dateTime

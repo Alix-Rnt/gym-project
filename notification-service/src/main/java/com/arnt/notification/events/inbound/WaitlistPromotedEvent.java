@@ -1,9 +1,9 @@
-package com.arnt.booking.events.outbound;
+package com.arnt.notification.events.inbound;
 
 import java.util.UUID;
 
 public record WaitlistPromotedEvent(
-    UUID waitlistID,
     UUID memberID,
+    UUID subscriptionID,
     String subscriptionName
 ) {}
