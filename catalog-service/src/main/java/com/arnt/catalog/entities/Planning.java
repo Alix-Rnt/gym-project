@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
  * Planning indicates when a lesson takes place, its capacity and its status.
  */
 @Entity
-@Table(name = "waitlist")
+@Table(name = "planning")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

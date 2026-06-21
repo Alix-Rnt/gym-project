@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
  * A Lesson contains the name, type, duration and description as well as the coach that teaches the lesson.
  */
 @Entity
-@Table(name = "waitlist")
+@Table(name = "lesson")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
