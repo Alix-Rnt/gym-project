@@ -11,17 +11,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Waitlist Data Transfer Object
+ * Waitlist Data Transfer Object.
  */
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class WaitlistDTO {
     private Map<UUID, Timestamp> membersTimestamp;
     private UUID subscriptionID;
 
     /**
-     * Convert DTO to Waitlist
+     * Convert DTO to Waitlist.
      * 
      * @return Waitlist entity
      */

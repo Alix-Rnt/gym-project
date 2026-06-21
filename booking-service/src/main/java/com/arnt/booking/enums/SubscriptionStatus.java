@@ -1,4 +1,4 @@
-package com.arnt.booking.status;
+package com.arnt.booking.enums;
 
 public enum SubscriptionStatus {
     VALID,
