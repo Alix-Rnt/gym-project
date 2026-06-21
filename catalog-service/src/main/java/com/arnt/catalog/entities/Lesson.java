@@ -2,6 +2,9 @@ package com.arnt.catalog.entities;
 
 import java.util.UUID;
 
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +12,8 @@ import lombok.NoArgsConstructor;
 /**
  * A Lesson contains the name, type, duration and description as well as the coach that teaches the lesson.
  */
+@Entity
+@Table(name = "waitlist")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
