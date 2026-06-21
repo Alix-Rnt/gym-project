@@ -1,6 +1,7 @@
 package com.arnt.catalog.services;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,5 +29,12 @@ public interface PlanningService {
      */
     Planning updateStatus(UUID id, PlanningStatus status);
 
-
+    /**
+     * Get all Plannings in a period.
+     *
+     * @param start the start date
+     * @param end the end date
+     * @return the list of Planning
+     */
+    List<Planning> getByPeriod(LocalDate start, LocalDate end);
 }
