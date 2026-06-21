@@ -1,10 +1,10 @@
-package com.arnt.booking.events.outbound;
+package com.arnt.notification.events.inbound;
 
 import java.util.List;
 import java.util.UUID;
 
 public record SubscriptionExpiredEvent(
-    UUID subscriptionId,
+    UUID subscriptionID,
     String subscriptionName,
-    List<UUID> membersId
+    List<UUID> membersID
 ) {}

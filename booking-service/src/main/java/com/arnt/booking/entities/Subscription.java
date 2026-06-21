@@ -29,6 +29,9 @@ public class Subscription {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    /** Subscription name */
+    private String name;
+
     /** Price in dollars. */
     private float price;
 

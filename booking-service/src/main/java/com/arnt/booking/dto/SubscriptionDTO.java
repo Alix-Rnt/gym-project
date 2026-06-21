@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SubscriptionDTO {
+    private String name;
     private float price;
     private SubscriptionStatus status;
     private Integer capacity;
@@ -32,6 +33,7 @@ public class SubscriptionDTO {
      */
     public Subscription toEntity() {
         Subscription subscription = new Subscription();
+        subscription.setName(this.name);
         subscription.setPrice(this.price);
         subscription.setStatus(this.status);
         subscription.setCapacity(this.capacity);

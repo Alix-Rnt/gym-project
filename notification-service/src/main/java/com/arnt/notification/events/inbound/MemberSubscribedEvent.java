@@ -1,4 +1,4 @@
-package com.arnt.booking.events.inbound;
+package com.arnt.notification.events.inbound;
 
 import java.util.UUID;
 
