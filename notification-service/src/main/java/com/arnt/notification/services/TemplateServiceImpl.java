@@ -3,11 +3,14 @@ package com.arnt.notification.services;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+
 import com.arnt.notification.dto.TemplateDTO;
 import com.arnt.notification.entities.Template;
 import com.arnt.notification.exceptions.TemplateNotFoundException;
 import com.arnt.notification.repositories.TemplateRepository;
 
+@Service
 public class TemplateServiceImpl implements TemplateService {
     private final TemplateRepository templateRepository;
 

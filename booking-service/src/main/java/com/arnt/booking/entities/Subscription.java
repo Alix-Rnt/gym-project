@@ -6,11 +6,6 @@ import java.util.UUID;
 
 import com.arnt.booking.enums.SubscriptionStatus;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,15 +13,11 @@ import lombok.NoArgsConstructor;
 /**
  * Subscription holds a list of plannings with a corresponding price.
  */
-@Entity
-@Table(name = "subscription")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Subscription {
     /** Random unique identifier. */
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     /** Subscription name */

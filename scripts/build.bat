@@ -9,3 +9,6 @@ call mvn package -DskipTests -f notification-service/pom.xml
 
 echo Build User Service
 call mvn package -DskipTests -f user-service/pom.xml
+
+echo Build Frontend Service
+call mvn package -DskipTests -f frontend-service/pom.xml

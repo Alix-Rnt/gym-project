@@ -6,11 +6,6 @@ import java.util.UUID;
 
 import com.arnt.notification.types.NotificationType;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,15 +13,11 @@ import lombok.NoArgsConstructor;
 /**
  * Notification is used to send information to Members via some media.
  */
-@Entity
-@Table(name = "notification")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Notification {
     /** Random unique identifier. */
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     /** Notification type. */
