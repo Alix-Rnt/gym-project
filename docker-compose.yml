@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  reverse-proxy:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - prometheus
+      - grafana
+      - user-sercice
+      - booking-service
+      - catalog-service
+      - notification-service
+      - frontend-service
+
+  # APP SERVICES
+
+  user-sercice:
+    build: ./user-service
+  booking-sercice:
+    build: ./booking-service
+  catalog-sercice:
+    build: ./catalog-service
+  notification-sercice:
+    build: ./notification-service
+  frontend-sercice:
+    build: ./frontend-service
+
+  # MONITORING
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.external-url=http://localhost/prometheus/'
+      - '--web.route-prefix=/'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SERVER_DOMAIN=localhost
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s:%(http_port)s/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false

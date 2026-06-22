@@ -19,12 +19,20 @@ public interface WaitlistService {
     void delete(UUID id);
 
     /**
+     * Return the amount of Member in the Waitlist.
+     * 
+     * @param id the Waitlist id
+     * @return the amount of Member
+     */
+    Integer getMemberAmount(UUID id);
+
+    /**
      * Return the Waitlist associated to a specific Subscirption.
      * 
-     * @param id the Subscription id
+     * @param subscriptionId the Subscription id
      * @return the Waitlist
      */
-    Waitlist getBySubscriptionId(UUID id);
+    Waitlist getBySubscriptionId(UUID subscriptionId);
 
     /**
      * Add a Member to a Waitlist.
@@ -41,4 +49,20 @@ public interface WaitlistService {
      * @param memberId the member id
      */
     void removeMember(UUID id, UUID memberId);
+
+    /**
+     * Add a Member to the Waitlist associated to a specific Subscirption.
+     * 
+     * @param subscriptionId the Subscription id
+     * @param memberId the Member id
+     */
+    void addMemberBySubscriptionId(UUID subscriptionId, UUID memberId) throws IOException, InterruptedException;
+    
+    /**
+     * Remove and return the first added Member id.
+     * 
+     * @param id the Waitlist id
+     * @return the Member id
+     */
+    UUID popMember(UUID id);
 }

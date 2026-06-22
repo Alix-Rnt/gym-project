@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 import java.util.Map;
 import java.util.UUID;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,9 +13,11 @@ import lombok.NoArgsConstructor;
 /**
  * Waitlist holds a list of members waiting for a specific subscription.
  */
+@Entity
+@Table(name = "waitlist")
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class Waitlist {
     /** Random unique identifier. */
     private UUID id;
