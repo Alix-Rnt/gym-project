@@ -10,7 +10,26 @@ services:
     depends_on:
       - prometheus
       - grafana
+      - user-sercice
+      - booking-service
+      - catalog-service
+      - notification-service
+      - frontend-service
 
+  # APP SERVICES
+
+  user-sercice:
+    build: ./user-service
+  booking-sercice:
+    build: ./booking-service
+  catalog-sercice:
+    build: ./catalog-service
+  notification-sercice:
+    build: ./notification-service
+  frontend-sercice:
+    build: ./frontend-service
+
+  # MONITORING
   prometheus:
     image: prom/prometheus:latest
     command:
