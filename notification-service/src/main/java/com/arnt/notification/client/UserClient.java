@@ -11,8 +11,8 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class UserClient {
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -42,7 +42,7 @@ public class UserClient {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode json = mapper.readTree(response.body());
 
-            emails.add(json.get("email").asString());
+            emails.add(json.get("email").toString());
         }
 
         return emails;

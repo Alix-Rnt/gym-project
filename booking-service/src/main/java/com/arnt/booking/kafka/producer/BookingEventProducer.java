@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BookingEventProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void publisPlanningRemovedFromSubscription(PlanningRemovedFromSubscriptionEvent event) {
+    public void publishPlanningRemovedFromSubscription(PlanningRemovedFromSubscriptionEvent event) {
         kafkaTemplate.send("booking.planning.removed", event.subscriptionId().toString(), event)
             .whenComplete((result, ex) -> {
                 if (ex != null) {

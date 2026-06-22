@@ -122,6 +122,8 @@ public class NotificationServiceImpl implements NotificationService {
             case UNKNOWN -> throw new UnsupportedOperationException("Unimplemented case: " + type);
             default -> throw new IllegalArgumentException("Unexpected value: " + type);
         }
+
+        notificationRepository.save(notification);
     }
 
     /**

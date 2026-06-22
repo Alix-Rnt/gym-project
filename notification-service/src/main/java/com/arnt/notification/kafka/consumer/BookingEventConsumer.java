@@ -7,7 +7,9 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import com.arnt.notification.client.UserClient;
+import com.arnt.notification.events.inbound.PlanningRemovedFromSubscriptionEvent;
 import com.arnt.notification.events.inbound.SubscriptionExpiredEvent;
+import com.arnt.notification.events.inbound.SubscriptionInvalidatedEvent;
 import com.arnt.notification.events.inbound.WaitlistPromotedEvent;
 import com.arnt.notification.services.NotificationService;
 
@@ -43,7 +45,7 @@ public class BookingEventConsumer {
     }
 
     @KafkaListener(topics = "booking.subscription.invalidated", groupId = SERVICE_NAME)
-    public void onSubscriptionInvalid(SubscriptionExpiredEvent event) throws IOException, InterruptedException {
+    public void onSubscriptionInvalid(SubscriptionInvalidatedEvent event) throws IOException, InterruptedException {
         notificationService.sendSubscriptionNotification(
                 "INVALIDATED",
                 event.membersID(),
@@ -52,11 +54,11 @@ public class BookingEventConsumer {
     }
     
     @KafkaListener(topics = "booking.planning.removed", groupId = SERVICE_NAME)
-    public void onSubscriptionRemove(SubscriptionExpiredEvent event) throws IOException, InterruptedException {
+    public void onPlanningRemove(PlanningRemovedFromSubscriptionEvent event) throws IOException, InterruptedException {
         notificationService.sendSubscriptionNotification(
                 "REMOVED",
                 event.membersID(),
                 userClient.getMemberEmails(event.membersID()),
-                event.subscriptionName());
+                event.planningID().toString());
     }
 }

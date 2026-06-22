@@ -38,7 +38,8 @@ public class BookingController {
      */
     public BookingController(
             SubscriptionService subscriptionService,
-            WaitlistService waitlistService) {
+            WaitlistService waitlistService
+    ) {
         this.subscriptionService = subscriptionService;
         this.waitlistService = waitlistService;
     }

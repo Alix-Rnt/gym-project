@@ -1,4 +1,4 @@
-package com.arnt;
+package com.arnt.booking;
 
 import static org.junit.Assert.assertTrue;
 

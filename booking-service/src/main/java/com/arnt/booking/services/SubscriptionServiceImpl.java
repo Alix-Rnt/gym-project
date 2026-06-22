@@ -25,9 +25,8 @@ import com.arnt.booking.exceptions.PlanningNotFoundException;
 import com.arnt.booking.exceptions.SubscriptionNotFoundException;
 import com.arnt.booking.kafka.producer.BookingEventProducer;
 import com.arnt.booking.repositories.SubscriptionRepository;
-
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class SubscriptionServiceImpl implements SubscriptionService {
@@ -137,6 +136,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         subscription.getPlanningsID().remove(planningId);
 
+        producer.publishPlanningRemovedFromSubscription(
+            new PlanningRemovedFromSubscriptionEvent(
+                    subscription.getId(),
+                    planningId,
+                    subscription.getMembersID())
+        );
+
         return subscriptionRepository.save(subscription);
     }
 
@@ -179,7 +185,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 subscription.getPlanningsID().remove(planningId);
                 subscriptionRepository.save(subscription);
 
-                producer.publisPlanningRemovedFromSubscription(
+                producer.publishPlanningRemovedFromSubscription(
                     new PlanningRemovedFromSubscriptionEvent(
                             subscription.getId(),
                             planningId,
@@ -237,7 +243,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         
         ObjectMapper mapper = new ObjectMapper();
         JsonNode json = mapper.readTree(response.body());
-        return LocalDateTime.parse(json.get("dateTime").asString());
+        return LocalDateTime.parse(json.get("dateTime").toString());
     }
 
 }

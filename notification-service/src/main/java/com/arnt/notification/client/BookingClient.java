@@ -9,8 +9,8 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class BookingClient {
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -36,6 +36,6 @@ public class BookingClient {
         
         ObjectMapper mapper = new ObjectMapper();
         JsonNode json = mapper.readTree(response.body());
-        return json.get("name").asString();
+        return json.get("name").toString();
     }
 }

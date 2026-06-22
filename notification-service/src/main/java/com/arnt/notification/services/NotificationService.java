@@ -11,13 +11,12 @@ import com.arnt.notification.entities.Notification;
  * NotificationService implements methods related to Notification management.
  */
 public interface NotificationService {
-    // Base methods related to NotificationService.
+    // Base methods related to NotificationRepository.
     List<Notification> getAll();
     Notification get(UUID id);
     Notification save(NotificationDTO dto);
     Notification update(UUID id, NotificationDTO dto);
     void delete(UUID id);
-    
 
     /**
      * Send a Notification.
