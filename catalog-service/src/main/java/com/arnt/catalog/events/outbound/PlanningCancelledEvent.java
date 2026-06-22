@@ -1,4 +1,4 @@
-package com.arnt.catalog.events.inbound;
+package com.arnt.catalog.events.outbound;
 
 import java.util.UUID;
 
