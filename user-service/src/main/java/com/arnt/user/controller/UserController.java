@@ -29,7 +29,7 @@ import com.arnt.user.services.CoachService;
 import com.arnt.user.services.AdminService;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/user")
 public class UserController {
 
     private final UserService userService;
