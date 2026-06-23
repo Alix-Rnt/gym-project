@@ -42,16 +42,16 @@ public class CatalogController {
      */
     public CatalogController(
             PlanningService planningService,
-            LessonService lessonService) {
+            LessonService lessonService
+    ) {
         this.planningService = planningService;
         this.lessonService = lessonService;
     }
 
-
     /*
-        =====================
+        ===============
         Lesson requests
-        =====================
+        ===============
     */
 
     /**
@@ -119,9 +119,9 @@ public class CatalogController {
     }
 
     /*
-        =====================
+        =================
         Planning requests
-        =====================
+        =================
     */
 
     /**
@@ -202,9 +202,10 @@ public class CatalogController {
         return planningService.updateStatus(id, status);
     }
 
-        /**
+    /**
      * Get all Plannings in a period.
      * GET /plannings?startDate={startDate}&endDate={endDate}
+     * 
      * @param startDate the start date of the period
      * @param endDate the end date of the period
      * @return the Plannings corresponding to the period

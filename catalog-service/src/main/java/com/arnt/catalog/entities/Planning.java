@@ -25,9 +25,6 @@ public class Planning {
     /** Indicates the date and time of the lesson. */
     private LocalDateTime dateTime;
 
-    // /** Indicates how many people can attend the lesson. */
-    // private int Capacity;
-
     /** Lesson Status. */
     private PlanningStatus Status;
 
