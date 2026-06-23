@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.arnt.booking.dto.SubscriptionDTO;
@@ -41,7 +42,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     public SubscriptionServiceImpl(
             SubscriptionRepository subscriptionRepository,
-            WaitlistService waitlistService,
+            @Lazy WaitlistService waitlistService,
             BookingEventProducer producer) {
         this.subscriptionRepository = subscriptionRepository;
         this.waitlistService = waitlistService;

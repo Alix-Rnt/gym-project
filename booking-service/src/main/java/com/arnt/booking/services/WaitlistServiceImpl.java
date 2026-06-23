@@ -24,13 +24,17 @@ import com.arnt.booking.repositories.WaitlistRepository;
 @Service
 public class WaitlistServiceImpl implements WaitlistService {
     private final WaitlistRepository waitlistRepository;
+    private final SubscriptionService subscriptionService;
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Value("$(user.service.url)")
     private String userServiceUrl;
 
-    public WaitlistServiceImpl(WaitlistRepository waitlistRepository) {
+    public WaitlistServiceImpl(
+            WaitlistRepository waitlistRepository,
+            SubscriptionService subscriptionService) {
         this.waitlistRepository = waitlistRepository;
+        this.subscriptionService = subscriptionService;
     }
 
     @Override
@@ -47,6 +51,8 @@ public class WaitlistServiceImpl implements WaitlistService {
 
     @Override
     public Waitlist save(WaitlistDTO dto) {
+        subscriptionService.get(dto.getSubscriptionID());
+
         Waitlist waitlist = dto.toEntity();
 
         return waitlistRepository.save(waitlist);
@@ -55,6 +61,7 @@ public class WaitlistServiceImpl implements WaitlistService {
     @Override
     public Waitlist update(UUID id, WaitlistDTO dto) {
         Waitlist waitlist = this.get(id);
+        subscriptionService.get(dto.getSubscriptionID());
 
         waitlist.setMembersTimestamp(dto.getMembersTimestamp());
         waitlist.setSubscriptionID(dto.getSubscriptionID());
@@ -99,7 +106,10 @@ public class WaitlistServiceImpl implements WaitlistService {
 
     @Override
     public void addMemberBySubscriptionId(UUID subscriptionId, UUID memberId) throws IOException, InterruptedException {
+        subscriptionService.get(subscriptionId);
+
         Waitlist waitlist = this.getBySubscriptionId(subscriptionId);
+        
         this.addMember(waitlist.getId(), memberId);
     }
 
