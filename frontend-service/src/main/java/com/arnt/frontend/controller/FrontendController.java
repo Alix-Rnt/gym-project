@@ -9,6 +9,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import java.util.Map;
+import java.util.UUID;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Controller
 public class FrontendController {
@@ -17,6 +22,26 @@ public class FrontendController {
     
     // URL interne du conteneur User-Service dans le réseau Docker
     private final String USER_SERVICE_URL = "http://user-service:8080/api/user/auth/login";
+
+    /**
+     * 0. Affiche la page d'accueil générale (index.html)
+     * URL d'accès : http://localhost/
+     */
+    @GetMapping("/")
+    public String index(HttpSession session) {
+        // Cherche le fichier src/main/resources/templates/index.html
+        // Si l'utilisateur a déjà une session active, on l'aiguille directement
+        String role = (String) session.getAttribute("role");
+
+        if (role != null) {
+            switch (role) {
+                case "MEMBER": return "redirect:/member/home";
+                case "COACH":  return "redirect:/coach/home";
+                case "ADMIN":  return "redirect:/admin/dashboard";
+            }
+        }
+        return "index";
+    }
 
     /**
      * 1. Affiche la page de login
@@ -36,14 +61,14 @@ public class FrontendController {
             HttpSession session,
             Model model) {
 
-        // On prépare le corps de la requête (Le DTO attendu par ton user-service)
+        System.out.println("\n--- [FRONTEND] Tentative de connexion pour : " + username + " ---");
+
         Map<String, String> loginRequest = Map.of(
             "username", username,
             "password", password
         );
 
         try {
-            // Appel synchrone au microservice User
             ResponseEntity<LoginResponseDTO> response = restTemplate.postForEntity(
                 USER_SERVICE_URL, 
                 loginRequest, 
@@ -53,86 +78,108 @@ public class FrontendController {
             LoginResponseDTO dto = response.getBody();
 
             if (dto != null) {
-                // Stockage des informations critiques dans la session Java du serveur
+                System.out.println("[FRONTEND] Réponse reçue du user-service :");
+                System.out.println("  -> Role   : " + dto.getRole());
+                System.out.println("  -> roleID : " + dto.getRoleID());
+                System.out.println("  -> Token  : " + dto.getToken());
+
+                // Sauvegarde en session
                 session.setAttribute("token", dto.getToken());
                 session.setAttribute("role", dto.getRole());
-                session.setAttribute("roleId", dto.getRoleId());
                 session.setAttribute("username", username);
+                
+                // ATTENTION : On vérifie si roleID arrive sous forme de String ou UUID
+                if (dto.getRoleID() != null) {
+                    session.setAttribute("roleID", UUID.fromString(dto.getRoleID()));
+                }
 
-                // Redirection côté serveur selon le rôle reçu
-                switch (dto.getRole()) {
-                    case "ADMIN":
-                        return "redirect:/admin/dashboard";
-                    case "COACH":
-                        return "redirect:/coach/home";
-                    case "MEMBER":
-                        return "redirect:/member/home";
-                    default:
-                        model.addAttribute("error", "Rôle inconnu.");
-                        return "auth/login";
+                System.out.println("[FRONTEND] Session configurée. Redirection vers l'espace adéquat...");
+
+                if ("MEMBER".equals(dto.getRole())) {
+                    return "redirect:/member/home";
+                } else if ("COACH".equals(dto.getRole())) {
+                    return "redirect:/coach/home";
+                } else if ("ADMIN".equals(dto.getRole())) {
+                    return "redirect:/admin/dashboard";
+                } else {
+                    System.out.println("[FRONTEND] ATTENTION: Rôle inconnu détecté : " + dto.getRole());
+                    model.addAttribute("error", "Rôle inconnu.");
+                    return "auth/login";
                 }
             }
 
         } catch (Exception e) {
-            // Si le serveur renvoie une 401, 404 ou crash, on l'intercepte ici
+            System.err.println("[FRONTEND] ERREUR pendant le POST login : " + e.getMessage());
+            e.printStackTrace();
             model.addAttribute("error", "Mot de passe ou username incorrect.");
-            return "auth/login"; // Réaffiche la page de login avec le message d'erreur
+            return "auth/login";
         }
 
-        model.addAttribute("error", "Une erreur inattendue est survenue.");
         return "auth/login";
     }
 
-    // --- Pages de destination temporaires (Vides pour tes tests) ---
-
     @GetMapping("/member/home")
     public String memberHome(HttpSession session, Model model) {
-        // 1. Sécurité : si pas connecté ou pas MEMBER, retour au login
-        if (!"MEMBER".equals(session.getAttribute("role"))) {
+        System.out.println("\n--- [FRONTEND] Accès à /member/home demandé ---");
+        
+        String role = (String) session.getAttribute("role");
+        UUID roleID = (UUID) session.getAttribute("roleID");
+
+        System.out.println("  -> Attribut Session 'role'   : " + role);
+        System.out.println("  -> Attribut Session 'roleID' : " + roleID);
+
+        // Vérification de sécurité
+        if (!"MEMBER".equals(role) || roleID == null) {
+            System.out.println("[FRONTEND] ÉCHEC SÉCURITÉ: Redirection forcée vers /auth/login");
             return "redirect:/auth/login";
         }
         
-        // 2. Simulation temporaire de l'objet "member" pour éviter le crash Thymeleaf
-        Map<String, String> fakeMember = Map.of(
-            "name", "Utilisateur",
-            "surname", "De Test",
-            "email", "testgym@example.com"
-        );
-        model.addAttribute("member", fakeMember);
+        try {
+            String memberServiceUrl = "http://user-service:8080/api/user/members/" + roleID;
+            System.out.println("[FRONTEND] Requête vers user-service: GET " + memberServiceUrl);
+            
+            ResponseEntity<MemberResponseDTO> response = restTemplate.getForEntity(
+                memberServiceUrl, 
+                MemberResponseDTO.class
+            );
+            
+            MemberResponseDTO trueMember = response.getBody();
+            System.out.println("[FRONTEND] Membre récupéré avec succès : " + (trueMember != null ? trueMember.getName() : "NULL"));
+            
+            model.addAttribute("member", trueMember);
+
+        } catch (Exception e) {
+            System.err.println("[FRONTEND] ERREUR lors de la récupération du membre sur user-service : " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Impossible de charger votre profil.");
+            model.addAttribute("member", new MemberResponseDTO(roleID, "Introuvable", "Erreur", ""));
+        }
         
-        // 3. On passe aussi des listes vides temporaires pour les abonnements
         model.addAttribute("mySubscriptions", java.util.List.of());
         model.addAttribute("catalogSubscriptions", java.util.List.of());
 
-        return "member/home";
-    }
-
-    @GetMapping("/coach/home")
-    public String coachHome(HttpSession session, Model model) {
-        if (!"COACH".equals(session.getAttribute("role"))) return "redirect:/auth/login";
-        return "coach/home";
-    }
-
-    @GetMapping("/admin/dashboard")
-    public String adminDashboard(HttpSession session) {
-        if (!"ADMIN".equals(session.getAttribute("role"))) return "redirect:/auth/login";
-        return "admin/dashboard";
+        return "member/home"; 
     }
 }
 
 /**
  * DTO interne pour mapper proprement la réponse JSON du user-service
  */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 class LoginResponseDTO {
     private String token;
     private String role;
-    private String roleId;
+    private String roleID;
+}
 
-    // Getters et Setters obligatoires pour le mapping automatique
-    public String getToken() { return token; }
-    public void setToken(String token) { this.token = token; }
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
-    public String getRoleId() { return roleId; }
-    public void setRoleId(String roleId) { this.roleId = roleId; }
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class MemberResponseDTO {
+    private UUID id;
+    private String surname;
+    private String name;
+    private String email;
 }

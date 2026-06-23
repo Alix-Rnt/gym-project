@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
         response.setToken(mockJwtToken);
         response.setUsername(user.getUsername());
         response.setRole(user.getRole());
-        response.setRoleID(user.getRoleID()); // C'est ici que le front récupère l'id de son profil !
+        response.setRoleID(user.getRoleID());
 
         return response;
     }
