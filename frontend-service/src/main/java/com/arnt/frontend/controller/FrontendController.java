@@ -1,13 +1,16 @@
 package com.arnt.frontend.controller;
 
 import jakarta.servlet.http.HttpSession;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.client.RestTemplate;
+
 import java.util.Map;
 import java.util.UUID;
 
@@ -22,6 +25,8 @@ public class FrontendController {
     
     // URL interne du conteneur User-Service dans le réseau Docker
     private final String USER_SERVICE_URL = "http://user-service:8080/api/user/auth/login";
+    // URL de ton microservice pour l'inscription
+    private final String USER_REGISTER_URL = "http://user-service:8080/api/user/auth/register";
 
     /**
      * 0. Affiche la page d'accueil générale (index.html)
@@ -41,6 +46,54 @@ public class FrontendController {
             }
         }
         return "index";
+    }
+    
+    /**
+     * 1. Affiche la page de register
+     */
+    @GetMapping("/auth/register")
+    public String showRegisterPage() {
+        return "auth/register";
+    }
+
+    /**
+     * 1. Affiche la page de register
+     */
+    @PostMapping("/auth/register")
+    public String handleRegister(
+            @ModelAttribute RegistrationDTO registrationDto,
+            HttpSession session,
+            Model model) {System.out.println("\n--- [FRONTEND] Tentative d'inscription pour : " + registrationDto.getUsername() + " ---");
+        System.out.println("  -> Nom/Prénom : " + registrationDto.getSurname() + " " + registrationDto.getName());
+        System.out.println("  -> Rôle choisi : " + registrationDto.getRole());
+
+        try {
+            // Envoi du DTO complet encapsulé automatiquement en JSON par RestTemplate
+            ResponseEntity<Void> response = restTemplate.postForEntity(
+                USER_REGISTER_URL, 
+                registrationDto, 
+                Void.class
+            );
+
+            // Si le statut HTTP est un succès (200 OK ou 201 Created)
+            if (response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("[FRONTEND] Inscription réussie côté user-service !");
+                
+                // Redirection vers la page de login après succès
+                return "redirect:/auth/login?success=account_created";
+            }
+
+        } catch (Exception e) {
+            System.err.println("[FRONTEND] ERREUR pendant l'inscription : " + e.getMessage());
+            e.printStackTrace();
+            
+            // On renvoie l'erreur à afficher sur le HTML
+            model.addAttribute("error", "Erreur lors de l'inscription. L'username ou l'email est peut-être déjà utilisé.");
+            return "auth/register"; // Réaffiche la page avec l'erreur
+        }
+
+        model.addAttribute("error", "Une erreur inattendue est survenue.");
+        return "auth/register";
     }
 
     /**
@@ -179,6 +232,18 @@ class LoginResponseDTO {
 @NoArgsConstructor
 class MemberResponseDTO {
     private UUID id;
+    private String surname;
+    private String name;
+    private String email;
+}
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class RegistrationDTO {
+    private String username;
+    private String password;
+    private String role;
     private String surname;
     private String name;
     private String email;
