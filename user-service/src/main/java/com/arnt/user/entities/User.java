@@ -2,8 +2,6 @@ package com.arnt.user.entities;
 
 import java.util.UUID;
 
-import com.arnt.user.enums.UserRole;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,7 +20,7 @@ public class User {
     
     private String password;
 
-    private UserRole role;
+    private String role;
     
     /** Reference ID to the corresponding subscription. */
     private UUID roleID;

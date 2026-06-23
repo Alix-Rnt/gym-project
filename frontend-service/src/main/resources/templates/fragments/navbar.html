@@ -1,0 +1,10 @@
+<div th:fragment="navbar" style="background: #222; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2ecc71;">
+    <div style="font-weight: bold; color: #2ecc71; font-size: 1.5rem;">GYM FIT</div>
+    <div style="display: flex; gap: 20px; align-items: center;">
+        <span style="color: #aaa;" th:text="${session.username != null ? session.username : 'Utilisateur'}"></span>
+        
+        <form th:action="@{/auth/logout}" method="POST" style="margin: 0;">
+            <button type="submit" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Déconnexion</button>
+        </form>
+    </div>
+</div>

@@ -19,17 +19,4 @@ public class LoginResponseDTO {
     private String token;
     private String role;
     private UUID roleID;
-
-    /**
-     * Convert DTO to User
-     * 
-     * @return User entity
-     */
-
-    public User toEntity() {
-        User user = new User();
-        // user.setUsername(this.username);
-        // user.setPassword(this.password);
-        return user;
-    }
 }

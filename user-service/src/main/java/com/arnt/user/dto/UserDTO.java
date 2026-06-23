@@ -3,7 +3,6 @@ package com.arnt.user.dto;
 import java.util.UUID;
 
 import com.arnt.user.entities.User;
-import com.arnt.user.enums.UserRole;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class UserDTO {
     private String username;
     private String password;
-    private UserRole role;
+    private String role;
     private UUID roleID;
 
     /**

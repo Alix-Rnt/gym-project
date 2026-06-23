@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>God Mode - Admin Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; }
+        .container { padding: 30px; max-width: 1200px; margin: 0 auto; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { padding: 12px 24px; background: #333; color: white; border: none; cursor: pointer; font-weight: bold; text-decoration: none; border-radius: 4px; }
+        .tab-btn.active { background: #2ecc71; color: black; }
+        .content-panel { background: #222; padding: 20px; border-radius: 6px; border: 1px solid #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+        th { color: #2ecc71; }
+        .btn-delete { background: #e74c3c; border: none; color: white; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <h2>Console d'Administration Globale (Vue Dieu)</h2>
+    
+    <div class="tabs">
+        <a th:href="@{/admin/dashboard(view='users')}" 
+           th:classappend="${currentView == 'users' ? 'active' : ''}" class="tab-btn">Tous les Utilisateurs</a>
+        <a th:href="@{/admin/dashboard(view='bookings')}" 
+           th:classappend="${currentView == 'bookings' ? 'active' : ''}" class="tab-btn">Tous les Abonnements</a>
+    </div>
+
+    <div class="content-panel">
+        <table th:if="${currentView == 'users'}">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom d'utilisateur</th>
+                    <th>Rôle</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="u : ${users}">
+                    <td th:text="${u.id}"></td>
+                    <td th:text="${u.username}"></td>
+                    <td th:text="${u.role}"></td>
+                    <td>
+                        <form th:action="@{/admin/user/delete}" method="POST" style="margin:0;">
+                            <input type="hidden" name="id" th:value="${u.id}" />
+                            <button type="submit" class="btn-delete" onclick="return confirm('Supprimer définitivement cet utilisateur ?')">Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table th:if="${currentView == 'bookings'}">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prix</th>
+                    <th>Capacité</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="s : ${subscriptions}">
+                    <td th:text="${s.id}"></td>
+                    <td th:text="${s.name}"></td>
+                    <td><span th:text="${s.price}"></span>€</td>
+                    <td th:text="${s.capacity}"></td>
+                    <td>
+                        <form th:action="@{/admin/subscription/delete}" method="POST" style="margin:0;">
+                            <input type="hidden" name="id" th:value="${s.id}" />
+                            <button type="submit" class="btn-delete" onclick="return confirm('Clôturer cette offre d\'abonnement ?')">Clôturer</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

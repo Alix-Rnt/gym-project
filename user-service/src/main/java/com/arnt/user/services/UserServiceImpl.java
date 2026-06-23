@@ -9,7 +9,6 @@ import com.arnt.user.dto.RegistrationDTO;
 import com.arnt.user.entities.User;
 import com.arnt.user.entities.Member;
 import com.arnt.user.entities.Coach;
-import com.arnt.user.enums.UserRole;
 import com.arnt.user.repositories.UserRepository;
 import com.arnt.user.repositories.MemberRepository;
 import com.arnt.user.repositories.CoachRepository;
@@ -32,7 +31,7 @@ public class UserServiceImpl implements UserService {
     public User registerNewUser(RegistrationDTO dto) {
         // 1. Vérification de l'unicité du Username
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
-            throw new RuntimeException("Username '" + dto.getUsername() + "' is already taken.");
+            throw new RuntimeException("Username '" + dto.getUsername() + "' is already taken."); 
         }
 
         // 2. Création et configuration de l'entité User de sécurité
@@ -44,12 +43,12 @@ public class UserServiceImpl implements UserService {
         // 3. Création du profil spécifique selon le rôle
         UUID generatedRoleId = UUID.randomUUID();
         
-        if (dto.getRole() == UserRole.MEMBER) {
+        if ("MEMBER".equals(dto.getRole())) {
             Member member = dto.toMemberEntity();
             member.setId(generatedRoleId);
             member.setUserID(generatedUserId); // Clé étrangère vers le User
             memberRepository.save(member);
-        } else if (dto.getRole() == UserRole.COACH) {
+        } else if ("COACH".equals(dto.getRole())) {
             Coach coach = dto.toCoachEntity();
             coach.setId(generatedRoleId);
             coach.setUserID(generatedUserId); // Clé étrangère vers le User
@@ -84,7 +83,7 @@ public class UserServiceImpl implements UserService {
         LoginResponseDTO response = new LoginResponseDTO();
         response.setToken(mockJwtToken);
         response.setUsername(user.getUsername());
-        response.setRole(user.getRole().toString());
+        response.setRole(user.getRole());
         response.setRoleID(user.getRoleID()); // C'est ici que le front récupère l'id de son profil !
 
         return response;
