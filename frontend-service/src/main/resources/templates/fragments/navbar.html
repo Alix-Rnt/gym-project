@@ -3,8 +3,11 @@
     <div style="display: flex; gap: 20px; align-items: center;">
         <span style="color: #aaa;" th:text="${session.username != null ? session.username : 'Utilisateur'}"></span>
         
-        <form th:action="@{/auth/logout}" method="POST" style="margin: 0;">
+        <!-- <a th:href="@{/auth/logout}" method="POST" style="margin: 0;">
             <button type="submit" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Déconnexion</button>
-        </form>
+        </a> -->
+        <a href="/auth/logout" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block;">
+            Déconnexion
+        </a>
     </div>
 </div>

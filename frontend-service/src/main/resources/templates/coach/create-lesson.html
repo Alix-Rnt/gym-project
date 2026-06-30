@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Créer un Cours - Gym Fit</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; }
+        .container { padding: 30px; max-width: 600px; margin: 50px auto; }
+        .card { background: #222; padding: 30px; border-radius: 8px; border: 1px solid #333; }
+        h2 { color: #2ecc71; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; color: #aaa; margin-bottom: 6px; font-weight: 500; }
+        .form-group input, .form-group textarea { 
+            width: 100%; padding: 10px; background: #333; border: 1px solid #444; 
+            color: white; border-radius: 4px; box-sizing: border-box; font-family: inherit;
+        }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .btn-submit { background: #2ecc71; color: black; border: none; padding: 12px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1em; }
+        .btn-submit:hover { background: #27ae60; }
+        .btn-cancel { display: block; text-align: center; color: #aaa; text-decoration: none; margin-top: 15px; font-size: 0.9em; }
+        .btn-cancel:hover { color: white; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <div class="card">
+        <h2>Créer un nouveau type de cours</h2>
+        <p style="color: #888; font-size: 0.9em; margin-bottom: 25px;">
+            Ce modèle de cours sera ajouté à votre catalogue et pourra ensuite être planifié sous forme d'abonnements.
+        </p>
+        
+        <form th:action="@{/coach/lesson}" method="POST">
+            <div class="form-group">
+                <label for="name">Nom du cours</label>
+                <input type="text" id="name" name="name" required placeholder="ex: Yoga Vinyasa, Haltérophilie Débutant...">
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" required placeholder="Décrivez le contenu du cours, l'intensité, le matériel requis..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="duration">Durée (en minutes)</label>
+                <input type="number" id="duration" name="duration" required min="15" max="240" placeholder="60">
+            </div>
+            
+            <button type="submit" class="btn-submit">Ajouter au Catalogue</button>
+        </form>
+        
+        <a th:href="@{/coach/home}" class="btn-cancel">Retour au tableau de bord</a>
+    </div>
+</div>
+
+</body>
+</html>

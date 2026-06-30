@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Planifier un Abonnement - Gym Fit</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; }
+        .container { padding: 30px; max-width: 800px; margin: 40px auto; }
+        .card { background: #222; padding: 30px; border-radius: 8px; border: 1px solid #333; }
+        h2 { color: #3498db; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; color: #aaa; margin-bottom: 6px; font-weight: 500; }
+        .form-group input, .form-group select { 
+            width: 100%; padding: 10px; background: #333; border: 1px solid #444; 
+            color: white; border-radius: 4px; box-sizing: border-box;
+        }
+        
+        /* Section de planification des créneaux */
+        .planning-section { background: #1a1a1a; padding: 20px; border-radius: 6px; border: 1px solid #222; margin-top: 25px; }
+        .day-row { display: grid; grid-template-columns: 150px 1fr; gap: 15px; padding: 12px 0; border-bottom: 1px solid #2a2a2a; align-items: center; }
+        .day-row:last-child { border-bottom: none; }
+        .day-label { font-weight: bold; color: #ddd; display: flex; align-items: center; gap: 10px; }
+        .time-inputs { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        .btn-submit { background: #3498db; color: white; border: none; padding: 14px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1em; margin-top: 20px; }
+        .btn-submit:hover { background: #2980b9; }
+        .btn-cancel { display: block; text-align: center; color: #aaa; text-decoration: none; margin-top: 15px; font-size: 0.9em; }
+        .btn-cancel:hover { color: white; }
+        .alert-warning { background: #d35400; color: white; padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <div class="card">
+        <h2>Créer une offre d'Abonnement & son Planning</h2>
+        <p style="color: #888; font-size: 0.9em; margin-bottom: 25px;">
+            Sélectionnez un cours pour lui attribuer des créneaux dans le <strong>Catalogue</strong>, puis configurez le tarif et le nombre de places pour le service de <strong>Réservation</strong>.
+        </p>
+
+        <!-- Sécurité visuelle si le coach n'a pas encore créé de cours -->
+        <div th:if="${#lists.isEmpty(myLessons)}" class="alert-warning">
+            ⚠️ Vous devez posséder au moins un type de cours dans votre catalogue avant de pouvoir éditer une offre d'abonnement. 
+            <a th:href="@{/coach/lesson/new}" style="color: white; font-weight: bold;">Créer un cours maintenant →</a>
+        </div>
+        
+        <form id="subscriptionForm" th:action="@{/coach/subscription}" method="POST" th:unless="${#lists.isEmpty(myLessons)}">
+            
+            <div class="form-group">
+                <label for="lessonId">1. Sélectionner le cours concerné</label>
+                <select id="lessonId" name="lessonId" required>
+                    <option value="" disabled selected>-- Choisissez l'un de vos cours au catalogue --</option>
+                    <option th:each="lesson : ${myLessons}" 
+                            th:value="${lesson.id}" 
+                            th:text="${lesson.name} + ' (' + ${lesson.duration} + ' min)'">
+                    </option>
+                </select>
+            </div>
+
+            <!-- SECTION PLANIFICATION DES CRÉNEAUX (Destination : Catalog Microservice) -->
+            <div class="planning-section">
+                <h3 style="margin-top: 0; font-size: 1.1em; color: #3498db;">2. Ajouter les Plannings au Catalogue (Année 2026)</h3>
+                
+                <!-- Sélecteur de semaine de l'année -->
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label for="weekSelector" style="color: #3498db; font-weight: bold;">Choisir la semaine d'exécution :</label>
+                    <input type="week" id="weekSelector" name="targetWeek" min="2026-W01" max="2026-W53" required style="width: 250px; padding: 10px; background: #333; border: 1px solid #444; color: white;">
+                    <p style="color: #888; font-size: 0.8em; margin-top: 5px;">Sélectionnez une semaine spécifique de l'année 2026 pour y placer vos séances.</p>
+                </div>
+
+                <p style="color: #888; font-size: 0.85em; margin-bottom: 15px;">
+                    Cochez les jours de cette semaine et indiquez l'heure précise.
+                </p>
+
+                <!-- Parcours des jours de la semaine injectés par le contrôleur -->
+                <div class="day-row js-day-row" th:each="day : ${daysOfWeek}">
+                    <div class="day-label">
+                        <input type="checkbox" th:id="'check-' + ${day}" class="js-checkbox" th:value="${day}">
+                        <label th:for="'check-' + ${day}" th:text="${day}" style="color: white; margin: 0; cursor: pointer;"></label>
+                    </div>
+                    <div class="time-inputs">
+                        <input type="time" class="js-time-input" style="width: 130px; padding: 5px; background: #444; border: 1px solid #555; color: white;" required disabled>
+                        <span style="color: #666; font-size: 0.85em; align-self: center;">(ex: 08:30)</span>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- SECTION OFFRE DE RÉSERVATION (Destination : Booking Microservice) -->
+            <div class="planning-section" style="border-color: #27ae60;">
+                <h3 style="margin-top: 0; font-size: 1.1em; color: #2ecc71;">3. Configuration Commerciale de l'Abonnement</h3>
+                
+                <div class="form-group">
+                    <label for="name">Nom de l'offre d'abonnement (Booking)</label>
+                    <input type="text" id="name" name="offerName" required placeholder="ex: Pack Yoga Elite - Accès Illimité">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="price">Prix de l'abonnement (€)</label>
+                        <input type="number" id="price" name="price" required min="0" placeholder="49">
+                    </div>
+                    <div class="form-group">
+                        <label for="capacity">Capacité (Nombre de places max)</label>
+                        <input type="number" id="capacity" name="capacity" required min="1" placeholder="15">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Input caché technique qui contiendra la liste finale formattée : "Jour@Heure" -->
+            <div id="hiddenInputsContainer"></div>
+            
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const rows = document.querySelectorAll(".js-day-row");
+                    const form = document.getElementById("subscriptionForm");
+                    const weekSelector = document.getElementById("weekSelector");
+
+                    // Gestion de l'activation dynamique des inputs Time
+                    rows.forEach(row => {
+                        const checkbox = row.querySelector(".js-checkbox");
+                        const timeInput = row.querySelector(".js-time-input");
+                        
+                        checkbox.addEventListener("change", function() {
+                            timeInput.disabled = !this.checked;
+                            if (!this.checked) {
+                                timeInput.value = "";
+                            }
+                        });
+                    });
+
+                    // Intercepter la soumission pour formater la donnée finale : "Semaine@Jour@Heure"
+                    form.addEventListener("submit", function(e) {
+                        const container = document.getElementById("hiddenInputsContainer");
+                        container.innerHTML = ""; // Reset
+                        
+                        const selectedWeek = weekSelector.value; // Format: "2026-W27"
+                        if (!selectedWeek) {
+                            e.preventDefault();
+                            alert("⚠️ Veuillez sélectionner une semaine précise.");
+                            return;
+                        }
+
+                        let hasAtLeastOneSchedule = false;
+
+                        rows.forEach(row => {
+                            const checkbox = row.querySelector(".js-checkbox");
+                            const timeInput = row.querySelector(".js-time-input");
+                            
+                            if (checkbox.checked && timeInput.value) {
+                                hasAtLeastOneSchedule = true;
+                                
+                                const hiddenInput = document.createElement("input");
+                                hiddenInput.type = "hidden";
+                                hiddenInput.name = "formattedSchedules";
+                                // Chaîne construite : "2026-W27@Lundi@08:30"
+                                hiddenInput.value = `${selectedWeek}@${checkbox.value}@${timeInput.value}`;
+                                container.appendChild(hiddenInput);
+                            }
+                        });
+
+                        if (!hasAtLeastOneSchedule) {
+                            e.preventDefault();
+                            alert("⚠️ Veuillez cocher au moins une journée et configurer un horaire.");
+                        }
+                    });
+                });
+            </script>
+
+            <button type="submit" class="btn-submit">Créer le Planning & l'Abonnement</button>
+        </form>
+        
+        <a th:href="@{/coach/home}" class="btn-cancel">Retour au tableau de bord</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const rows = document.querySelectorAll(".js-day-row");
+        const form = document.getElementById("subscriptionForm");
+
+        // Activer/Désactiver l'input heure selon que la case est cochée
+        rows.forEach(row => {
+            const checkbox = row.querySelector(".js-checkbox");
+            const timeInput = row.querySelector(".js-time-input");
+            
+            checkbox.addEventListener("change", function() {
+                timeInput.disabled = !this.checked;
+                if (!this.checked) {
+                    timeInput.value = "";
+                }
+            });
+        });
+
+        // Intercepter la soumission pour injecter les couples Jour@Heure proprement
+        form.addEventListener("submit", function(e) {
+            const container = document.getElementById("hiddenInputsContainer");
+            container.innerHTML = ""; // Clean
+            
+            let hasAtLeastOneSchedule = false;
+
+            rows.forEach(row => {
+                const checkbox = row.querySelector(".js-checkbox");
+                const timeInput = row.querySelector(".js-time-input");
+                
+                if (checkbox.checked && timeInput.value) {
+                    hasAtLeastOneSchedule = true;
+                    // On crée un input caché nommé "formattedSchedules" contenant "Lundi@08:30"
+                    const hiddenInput = document.createElement("input");
+                    hiddenInput.type = "hidden";
+                    hiddenInput.name = "formattedSchedules";
+                    hiddenInput.value = `${checkbox.value}@${timeInput.value}`;
+                    container.appendChild(hiddenInput);
+                }
+            });
+
+            if (!hasAtLeastOneSchedule) {
+                e.preventDefault();
+                alert("⚠️ Veuillez sélectionner au moins un jour et indiquer un horaire pour valider le planning.");
+            }
+        });
+    });
+</script>
+</body>
+</html>

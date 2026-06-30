@@ -39,8 +39,8 @@ public class CoachServiceImpl implements CoachService {
         coach.setUserID(dto.getUserID());
         
         // Initialisation des listes d'UUID vides
-        coach.setLessonList(new ArrayList<>());
-        coach.setSubscriptionList(new ArrayList<>());
+        coach.setLessonList(new ArrayList<UUID>());
+        coach.setSubscriptionList(new ArrayList<UUID>());
         
         return coachRepository.save(coach);
     }

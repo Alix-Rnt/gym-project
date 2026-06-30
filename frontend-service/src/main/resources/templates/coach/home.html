@@ -6,15 +6,31 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; }
         .container { padding: 30px; max-width: 1200px; margin: 0 auto; }
-        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-top: 20px; }
-        .card { background: #222; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px; }
+        
+        /* Architecture en grille : Gauche (Profil/Cours) - Droite (Abonnements lancés) */
+        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 25px; margin-top: 20px; }
+        .card { background: #222; padding: 25px; border-radius: 8px; border: 1px solid #333; margin-bottom: 25px; }
+        
         h3 { color: #2ecc71; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; color: #aaa; margin-bottom: 4px; }
-        .form-group input { width: 100%; padding: 8px; background: #333; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
-        .btn { background: #2ecc71; color: black; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; }
+        
+        /* Boutons d'action vers les pages dédiées */
+        .btn-action { 
+            display: inline-block; text-align: center; background: #2ecc71; color: black; 
+            border: none; padding: 12px 15px; border-radius: 4px; font-weight: bold; 
+            cursor: pointer; width: 100%; text-decoration: none; box-sizing: border-box; margin-bottom: 12px;
+        }
+        .btn-action:hover { background: #27ae60; }
+        
+        /* Listes stylisées */
         ul { padding-left: 20px; margin: 0; color: #ccc; }
-        li { margin-bottom: 8px; }
+        li { margin-bottom: 10px; }
+        .text-muted { color: #888; font-style: italic; }
+        
+        /* Affichage des abonnements publiés */
+        .sub-item { background: #1a1a1a; padding: 15px; border-radius: 6px; border-left: 4px solid #2ecc71; margin-bottom: 15px; }
+        .sub-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; }
+        .price { color: #2ecc71; }
+        .badge { background: #333; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; color: #aaa; }
     </style>
 </head>
 <body>
@@ -25,7 +41,9 @@
     <h2>Espace Entraîneur / Coach</h2>
     
     <div class="grid">
+        <!--colonne GAUCHE : Profil & Catalogue de cours -->
         <div>
+            <!-- Profil -->
             <div class="card">
                 <h3>Mon Profil Coach</h3>
                 <p><strong>Nom :</strong> <span th:text="${coach.surname}"></span></p>
@@ -33,50 +51,72 @@
                 <p><strong>Email :</strong> <span th:text="${coach.email}"></span></p>
             </div>
             
+            <!-- Gestion des types de cours -->
             <div class="card">
-                <h3>Mes Cours au Catalogue</h3>
-                <div th:if="${#lists.isEmpty(myLessons)}">Aucun cours créé pour le moment.</div>
-                <ul>
+                <h3>Mes Cours (Catalog)</h3>
+                <a th:href="@{/coach/lesson/new}" class="btn-action">+ Créer un nouveau type de cours</a>
+                
+                <div th:if="${#lists.isEmpty(myLessons)}" class="text-muted" style="margin-top: 15px;">
+                    Aucun cours créé pour le moment.
+                </div>
+                <ul style="margin-top: 15px;">
                     <li th:each="lesson : ${myLessons}">
-                        <strong th:text="${lesson.name}"></strong> - <span th:text="${lesson.duration}"></span> min
+                        <strong th:text="${lesson.name}"></strong><br>
+                        <small class="text-muted" th:text="${lesson.duration} + ' min'"></small>
                     </li>
                 </ul>
             </div>
         </div>
 
+        <!-- colonne DROITE : Abonnements & Plannings -->
         <div>
             <div class="card">
-                <h3>Créer un type de Cours (Catalog)</h3>
-                <form th:action="@{/coach/lesson}" method="POST">
-                    <div class="form-group">
-                        <label>Nom du cours</label>
-                        <input type="text" name="name" required placeholder="ex: Crossfit Avancé">
+                <h3>Mes Offres d'Abonnement Actives (Booking)</h3>
+                
+                <!-- Redirection vers la page complexe avec sélection de cours et plannings -->
+                <a th:href="@{/coach/subscription/new}" class="btn-action" style="background: #3498db; color: white;">
+                    + Planifier & Publier un Abonnement
+                </a>
+                
+                <div th:if="${#lists.isEmpty(mySubscriptions)}" class="text-muted" style="margin-top: 20px;">
+                    Vous n'avez publié aucune offre d'abonnement avec créneaux pour le moment.
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <!-- Boucle sur les vrais abonnements du coach -->
+                    <div class="sub-item" th:each="sub : ${mySubscriptions}">
+                        <div class="sub-header">
+                            <span th:text="${sub.name}">Nom manquant</span>
+                            <span class="price" th:text="${sub.price} + ' €'">Prix manquant</span>
+                        </div>
+                        <div style="margin: 8px 0; font-size: 0.9em; color: #bbb;">
+                            <strong>Cours associé :</strong> <span th:text="${sub.lessonName}">Nom manquant</span>
+                        </div>
+                        
+                        <!-- Section créneaux/plannings planifiés pour cet abonnement -->
+                        <div style="font-size: 0.85em; color: #999;">
+                            <strong>Créneaux planifiés :</strong>
+                            <div th:if="${#lists.isEmpty(sub.planningsID)}">Aucun créneau associé.</div>
+                            
+                            <!-- Boucle mise à jour pour gérer les objets de planning et formater le LocalDateTime -->
+                            <span th:unless="${#lists.isEmpty(sub.planningsID)}" th:each="planning, iterStat : ${sub.planningsID}">
+                                <th:block th:if="${planning.dateTime != null}">
+                                    <!-- Séparation propre : Thymeleaf n'a plus à parser d'apostrophes imbriquées -->
+                                    <span th:text="${#temporals.format(planning.dateTime, 'dd/MM/yyyy')}">01/01/2026</span>
+                                    <span>à</span>
+                                    <span th:text="${#temporals.format(planning.dateTime, 'HH:mm')}">08:30</span>
+                                </th:block>
+                                <span th:if="${planning.dateTime == null}">Date non spécifiée</span>
+                                <span th:unless="${iterStat.last}">, </span>
+                            </span>
+                        </div>
+                        
+                        <div style="margin-top: 10px; text-align: right;">
+                            <span class="badge" th:text="'Capacité : ' + ${sub.capacity} + ' max'">Capacité manquante</span>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Durée (en minutes)</label>
-                        <input type="number" name="duration" required placeholder="60">
-                    </div>
-                    <button type="submit" class="btn">Enregistrer le Cours</button>
-                </form>
-            </div>
-            
-            <div class="card">
-                <h3>Créer une Offre d'Abonnement (Booking)</h3>
-                <form th:action="@{/coach/subscription}" method="POST">
-                    <div class="form-group">
-                        <label>Nom de l'offre d'abonnement</label>
-                        <input type="text" name="name" required placeholder="ex: Pass Mensuel Full Access">
-                    </div>
-                    <div class="form-group">
-                        <label>Prix (€)</label>
-                        <input type="number" name="price" required placeholder="49">
-                    </div>
-                    <div class="form-group">
-                        <label>Capacité maximale</label>
-                        <input type="number" name="capacity" required placeholder="30">
-                    </div>
-                    <button type="submit" class="btn">Publier l'abonnement</button>
-                </form>
+                </div>
+
             </div>
         </div>
     </div>

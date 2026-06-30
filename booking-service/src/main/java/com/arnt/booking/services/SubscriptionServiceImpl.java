@@ -8,6 +8,7 @@ import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +38,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     private final BookingEventProducer producer;
 
-    @Value("$(catalog.service.url)")
+    @Value("${catalog.service.url}")
     private String catalogServiceUrl;
 
     public SubscriptionServiceImpl(
@@ -63,9 +64,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public Subscription save(SubscriptionDTO dto) throws IOException, InterruptedException {
+        System.out.println("[BOOKING] Sauvegarde début :" + catalogServiceUrl);
         validatePlanningList(dto.getPlanningsID());
-        
+        System.out.println("[BOOKING] Validation réussie");
         Subscription subscription = dto.toEntity();
+        if (subscription.getId() == null) {
+            subscription.setId(UUID.randomUUID());
+        }
+        subscription.setPlanningsID(new ArrayList<UUID>());
+        subscription.setMembersID(new ArrayList<UUID>());
+        System.out.println("[BOOKING] Entité créée ");
 
         return subscriptionRepository.save(subscription);
     }
@@ -204,6 +212,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
      * @throws InterruptedException
      */
     private void validatePlanning(UUID planningID) throws IOException, InterruptedException {
+        System.out.println("\n--- [BOOKING] Validating planning : " + planningID.toString());
         HttpRequest bookingRequest = HttpRequest.newBuilder()
                 .uri(URI.create(catalogServiceUrl + "/api/catalog/plannings/" + planningID))
                 .GET()

@@ -35,8 +35,11 @@
         <div th:if="${error}" class="error-message" th:text="${error}"></div>
     </form>
     
-    <a th:href="@{/auth/register}" class="switch-link">Pas encore de compte ? S'inscrire</a>
+    <a th:href="@{/auth/register}" th:unless="${param.success}" class="switch-link">Pas encore de compte ? S'inscrire</a>
+    <div th:if="${param.success}" style="color: #2ecc71; text-align: center; margin-bottom: 15px; margin-top: 15px;">
+        Compte créé avec succès ! Connectez-vous.
+    </div>
+    <a th:href="@{/}" class="btn-cancel">Retour à la page d'accueil</a>
 </div>
-
 </body>
 </html>

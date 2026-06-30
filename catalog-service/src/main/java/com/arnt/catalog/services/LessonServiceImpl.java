@@ -36,6 +36,9 @@ public class LessonServiceImpl implements LessonService {
         // Validate Coach
 
         Lesson lesson = dto.toEntity();
+        if (lesson.getId() == null) {
+            lesson.setId(UUID.randomUUID());
+        }
 
         return lessonRepository.save(lesson);
     }

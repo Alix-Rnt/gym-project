@@ -43,6 +43,9 @@ public class PlanningServiceImpl implements PlanningService {
         lessonService.get(dto.getLessonID());
         
         Planning planning = dto.toEntity();
+        if (planning.getId() == null) {
+            planning.setId(UUID.randomUUID());
+        }
 
         return planningRepository.save(planning);
     }
