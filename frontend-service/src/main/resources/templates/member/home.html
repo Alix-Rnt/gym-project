@@ -7,10 +7,14 @@
         body { font-family: 'Segoe UI', sans-serif; background: #111; color: white; margin: 0; }
         .container { padding: 30px; max-width: 1200px; margin: 0 auto; }
         .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-top: 20px; }
-        .card { background: #222; padding: 20px; border-radius: 8px; border: 1px solid #333; }
-        h3 { color: #2ecc71; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .card { background: #222; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px;}
+        h3 { color: #2ecc71; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; }
         .btn-action { background: #2ecc71; color: black; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; }
         .btn-danger { background: #e74c3c; color: white; }
+        .sub-box { border-bottom: 1px solid #333; padding: 15px 0; }
+        .sub-box:last-child { border-bottom: none; }
+        .sub-meta { font-size: 0.9em; color: #aaa; margin: 5px 0; }
+        .price-tag { color: #2ecc71; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -21,6 +25,7 @@
     <h2>Tableau de bord Membre</h2>
     
     <div class="grid">
+        <!-- Profil du membre -->
         <div class="card">
             <h3>Mon Profil</h3>
             <p><strong>Nom :</strong> <span th:text="${member.surname}"></span></p>
@@ -28,29 +33,50 @@
             <p><strong>Email :</strong> <span th:text="${member.email}"></span></p>
             <hr style="border-color:#333;">
             
-            <form th:action="@{/member/delete}" method="POST">
-                <button type="submit" class="btn-action btn-danger" onclick="return confirm('Confirmer la suppression définitive ?')">Supprimer mon compte</button>
-            </form>
         </div>
 
+        <!-- Abonnements actifs du membre -->
         <div class="card">
             <h3>Mes Abonnements Actifs</h3>
             <div th:if="${#lists.isEmpty(mySubscriptions)}">Aucun abonnement actif.</div>
-            <div th:each="sub : ${mySubscriptions}">
-                <p>✅ <strong th:text="${sub.name}"></strong> - <span th:text="${sub.price}"></span>€</p>
+            
+            <div th:each="sub : ${mySubscriptions}" class="sub-box">
+                <div>
+                    🚀 <strong style="font-size: 1.1em;" th:text="${sub.name}">Nom de l'abonnement</strong>
+                </div>
+                <div class="sub-meta">
+                    <span th:text="${sub.description != null ? sub.description : 'Aucune description disponible.'}">Description</span>
+                </div>
+                <div class="sub-meta">
+                    <span>Prix : </span><span class="price-tag" th:text="${sub.price} + ' €'">0 €</span>
+                    <span style="margin-left: 15px;">Capacité maximale : </span><span th:text="${sub.capacity} + ' personnes'">0</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="card" style="margin-top: 30px;">
+    <!-- Catalogue complet de tous les abonnements -->
+    <div class="card" style="margin-top: 10px;">
         <h3>Rechercher et s'inscrire à un abonnement</h3>
-        <div th:each="sub : ${catalogSubscriptions}" style="padding:10px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
-            <span><strong th:text="${sub.name}"></strong> - <span th:text="${sub.price}"></span>€ (Capacité: <span th:text="${sub.capacity}"></span>)</span>
+        <div th:if="${#lists.isEmpty(catalogSubscriptions)}">Aucun abonnement disponible dans le catalogue pour le moment.</div>
+        
+        <div th:each="sub : ${catalogSubscriptions}" class="sub-box" style="display:flex; justify-content:space-between; align-items:center; gap: 20px;">
+            <div style="flex: 1;">
+                <div>
+                    <strong style="font-size: 1.1em; color: #2ecc71;" th:text="${sub.name}">Nom de l'offre</strong>
+                </div>
+                <div class="sub-meta">
+                    <span>Tarif : </span><span class="price-tag" th:text="${sub.price} + ' €'">0 €</span>
+                    <span style="margin-left: 15px;">Places : </span><span th:text="${sub.capacity} + ' max'">0</span>
+                </div>
+            </div>
             
-            <form th:action="@{/member/subscribe}" method="POST" style="margin:0;">
-                <input type="hidden" name="subscriptionId" th:value="${sub.id}"/>
-                <button type="submit" class="btn-action">S'inscrire</button>
-            </form>
+            <div>
+                <!-- <form th:action="@{/member/subscribe}" method="POST" style="margin:0;">
+                    <input type="hidden" name="subscriptionId" th:value="${sub.id}"/>
+                    <button type="submit" class="btn-action">S'inscrire</button>
+                </form> -->
+            </div>
         </div>
     </div>
 </div>

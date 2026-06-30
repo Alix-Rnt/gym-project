@@ -39,7 +39,7 @@ public class FrontendController {
     private final String USER_REGISTER_URL = "http://user-service:8080/api/user/auth/register";
 
     /**
-     * 0. Affiche la page d'accueil générale (index.html)
+     *  Affiche la page d'accueil générale (index.html)
      * URL d'accès : http://localhost/
      */
     @GetMapping("/")
@@ -59,7 +59,7 @@ public class FrontendController {
     }
     
     /**
-     * 1. Affiche la page de register
+     *  Affiche la page de register
      */
     @GetMapping("/auth/register")
     public String showRegisterPage() {
@@ -67,7 +67,7 @@ public class FrontendController {
     }
 
     /**
-     * 1. Affiche la page de register
+     *  Affiche la page de register
      */
     @PostMapping("/auth/register")
     public String handleRegister(
@@ -107,7 +107,7 @@ public class FrontendController {
     }
 
     /**
-     * 1. Affiche la page de login
+     *  Affiche la page de login
      */
     @GetMapping("/auth/login")
     public String showLoginPage() {
@@ -115,7 +115,7 @@ public class FrontendController {
     }
 
     /**
-     * 2. Traite la soumission du formulaire HTML (Pure Java)
+     *  Traite la soumission du formulaire HTML
      */
     @PostMapping("/auth/login")
     public String handleLogin(
@@ -151,7 +151,7 @@ public class FrontendController {
                 session.setAttribute("role", dto.getRole());
                 session.setAttribute("username", username);
                 
-                // ATTENTION : On vérifie si roleID arrive sous forme de String ou UUID
+                // On vérifie si roleID arrive sous forme de String ou UUID
                 if (dto.getRoleID() != null) {
                     session.setAttribute("roleID", UUID.fromString(dto.getRoleID()));
                 }
@@ -197,6 +197,7 @@ public class FrontendController {
             return "redirect:/auth/login";
         }
         
+        // A. Récupération du profil du membre
         try {
             String memberServiceUrl = "http://user-service:8080/api/user/members/" + roleID;
             System.out.println("[FRONTEND] Requête vers user-service: GET " + memberServiceUrl);
@@ -207,19 +208,50 @@ public class FrontendController {
             );
             
             MemberResponseDTO trueMember = response.getBody();
-            System.out.println("[FRONTEND] Membre récupéré avec succès : " + (trueMember != null ? trueMember.getName() : "NULL"));
-            
             model.addAttribute("member", trueMember);
 
         } catch (Exception e) {
             System.err.println("[FRONTEND] ERREUR lors de la récupération du membre sur user-service : " + e.getMessage());
-            e.printStackTrace();
             model.addAttribute("error", "Impossible de charger votre profil.");
             model.addAttribute("member", new MemberResponseDTO(roleID, "Introuvable", "Erreur", ""));
         }
         
-        model.addAttribute("mySubscriptions", java.util.List.of());
-        model.addAttribute("catalogSubscriptions", java.util.List.of());
+        // B. Composition des abonnements actifs du membre (Mes Abonnements Actifs)
+        java.util.List<Map<String, Object>> memberSubscriptions = new java.util.ArrayList<>();
+        try {
+            String memberSubsUrl = "http://user-service:8080/api/user/members/" + roleID + "/subscriptions";
+            java.util.List<String> activeSubIds = restTemplate.getForObject(memberSubsUrl, java.util.List.class);
+            
+            if (activeSubIds != null) {
+                for (String id : activeSubIds) {
+                    try {
+                        String bookingUrl = "http://booking-service:8080/api/booking/subscriptions/" + id;
+                        Map<String, Object> subData = restTemplate.getForObject(bookingUrl, Map.class);
+                        if (subData != null) {
+                            memberSubscriptions.add(subData);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("[FRONTEND] Impossible de récupérer l'abonnement membre actif " + id);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[FRONTEND] Erreur récupération des abonnements actifs du membre : " + e.getMessage());
+        }
+        model.addAttribute("mySubscriptions", memberSubscriptions);
+
+        // C. Récupération du catalogue global de tous les abonnements disponibles
+        java.util.List<Map<String, Object>> catalogSubscriptions = new java.util.ArrayList<>();
+        try {
+            String allSubsUrl = "http://booking-service:8080/api/booking/subscriptions";
+            java.util.List<Map<String, Object>> rawCatalog = restTemplate.getForObject(allSubsUrl, java.util.List.class);
+            if (rawCatalog != null) {
+                catalogSubscriptions = rawCatalog;
+            }
+        } catch (Exception e) {
+            System.err.println("[FRONTEND] Erreur lors de la récupération du catalogue global des abonnements : " + e.getMessage());
+        }
+        model.addAttribute("catalogSubscriptions", catalogSubscriptions);
 
         return "member/home"; 
     }
@@ -262,15 +294,15 @@ public class FrontendController {
             model.addAttribute("coach", new CoachResponseDTO(roleID, "Introuvable", "Erreur", ""));
         }
 
-        // 2. COMPOSITION DES COURS (LESSONS)
+        // 2. Composition des cours (LESSONS)
         java.util.List<Map<String, Object>> lessonsWithData = new java.util.ArrayList<>();
         try {
-            // Étape A : Demander au user-service la liste des IDs de leçons de ce coach
+            // Demander au user-service la liste des IDs de leçons de ce coach
             String coachLessonsIdsUrl = "http://user-service:8080/api/user/coaches/" + roleID + "/lessons";
             java.util.List<String> lessonIds = restTemplate.getForObject(coachLessonsIdsUrl, java.util.List.class);
             
             if (lessonIds != null) {
-                // Étape B : Pour chaque ID, aller chercher les détails dans le catalog-service
+                // Pour chaque ID, aller chercher les détails dans le catalog-service
                 for (String id : lessonIds) {
                     try {
                         String catalogUrl = "http://catalog-service:8080/api/catalog/lessons/" + id;
@@ -289,19 +321,20 @@ public class FrontendController {
         model.addAttribute("myLessons", lessonsWithData);
 
 
-        // 3. COMPOSITION DES ABONNEMENTS (SUBSCRIPTIONS)
+        // 3. Composition des abonnements (SUBSCRIPTIONS)
         java.util.List<Map<String, Object>> subscriptionsWithData = new java.util.ArrayList<>();
         try {
-            // Étape A : Demander au user-service la liste des IDs d'abonnements de ce coach
+            // Demander au user-service la liste des IDs d'abonnements de ce coach
             String coachSubsIdsUrl = "http://user-service:8080/api/user/coaches/" + roleID + "/subscriptions";
             java.util.List<String> subIds = restTemplate.getForObject(coachSubsIdsUrl, java.util.List.class);
             
             if (subIds != null) {
-                // Étape B : Pour chaque ID, aller chercher les détails dans le booking-service
+                // Pour chaque ID, aller chercher les détails dans le booking-service
                 for (String id : subIds) {
                     try {
                         String bookingUrl = "http://booking-service:8080/api/booking/subscriptions/" + id;
                         Map<String, Object> subData = restTemplate.getForObject(bookingUrl, Map.class);
+                        System.out.println("[FRONTEND] subData :" + subData);
                         
                         if (subData != null) {
                             // Récupération de la liste brute des IDs de planning stockée dans la réponse de Booking
@@ -312,13 +345,14 @@ public class FrontendController {
                             String lessonIdFromPlannings = null;
 
                             if (rawPlanningIds != null && !rawPlanningIds.isEmpty()) {
-                                // Étape C : Pour chaque ID de planning, on interroge le catalog-service
+                                // Pour chaque ID de planning, on interroge le catalog-service
                                 for (String planningId : rawPlanningIds) {
                                     try {
                                         String planningCatalogUrl = "http://catalog-service:8080/api/catalog/plannings/" + planningId;
                                         Map<String, Object> planningData = restTemplate.getForObject(planningCatalogUrl, Map.class);
                                         
                                         if (planningData != null) {
+                                            System.out.println("[FRONTEND] planningData :" + planningData);
                                             fullPlanningsList.add(planningData);
                                             
                                             // On capture le lessonId du premier planning valide qu'on croise
@@ -336,13 +370,15 @@ public class FrontendController {
                                 if (rawPlanningIds != null) {
                                     System.out.println("[FRONTEND] Liste planning vide");
                                 }
-                                System.out.println("[FRONTEND] Liste planning nulle");
+                                else {
+                                    System.out.println("[FRONTEND] Liste planning nulle");
+                                }
                             }
 
                             // On remplace la liste d'IDs de l'abonnement par notre liste d'objets complets
                             subData.put("planningsID", fullPlanningsList);
 
-                            // Étape D : Si on a récupéré un lessonId valide depuis les plannings, on va chercher le nom de la Lesson
+                            // Si on a récupéré un lessonId valide depuis les plannings, on va chercher le nom de la Lesson
                             if (lessonIdFromPlannings != null) {
                                 try {
                                     String lessonUrl = "http://catalog-service:8080/api/catalog/lessons/" + lessonIdFromPlannings;
@@ -387,11 +423,8 @@ public class FrontendController {
         if (!"COACH".equals(role)) {
             return "redirect:/auth/login";
         }
-
-        // On peut passer un objet vide pour l'associer au formulaire Thymeleaf si besoin
-        // model.addAttribute("lessonForm", new LessonDTO());
         
-        return "coach/create-lesson"; // Cherchera templates/coach/create-lesson.html
+        return "coach/create-lesson";
     }
 
     // URL pour créer le cours dans le catalogue
@@ -431,7 +464,7 @@ public class FrontendController {
         lessonDto.setCoachID(coachId);
 
         try {
-            // ÉTAPE 1 : Envoi au catalog-service (POST)
+            // Envoi au catalog-service (POST)
             System.out.println("[FRONTEND] Étape 1 : Envoi de la leçon au catalog-service...");
             ResponseEntity<Map> catalogResponse = restTemplate.postForEntity(
                 CATALOG_LESSON_URL, 
@@ -472,7 +505,6 @@ public class FrontendController {
             e.printStackTrace();
             
             model.addAttribute("error", "Échec de l'enregistrement du cours. Les microservices associés sont peut-être indisponibles.");
-            // On réinjecte les jours de la semaine pour que l'affichage ne plante pas si l'utilisateur y revient
             model.addAttribute("daysOfWeek", java.util.List.of("Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"));
             return "coach/create-lesson";
         }
@@ -496,13 +528,13 @@ public class FrontendController {
         // 2. Récupération et résolution des leçons du coach (Composition)
         java.util.List<Map<String, Object>> coachLessonsWithData = new java.util.ArrayList<>();
         try {
-            // Étape A : Récupérer les IDs de leçons appartenant au coach depuis le user-service
+            // Récupérer les IDs de leçons appartenant au coach depuis le user-service
             String userCoachLessonsUrl = "http://user-service:8080/api/user/coaches/" + roleID + "/lessons";
             System.out.println("[FRONTEND] Récupération des IDs de leçons : GET " + userCoachLessonsUrl);
             java.util.List<String> lessonIds = restTemplate.getForObject(userCoachLessonsUrl, java.util.List.class);
             
             if (lessonIds != null && !lessonIds.isEmpty()) {
-                // Étape B : Pour chaque ID, interroger le catalogue pour avoir le nom et les détails
+                // Pour chaque ID, interroger le catalogue pour avoir le nom et les détails
                 for (String id : lessonIds) {
                     try {
                         String catalogUrl = "http://catalog-service:8080/api/catalog/lessons/" + id;
@@ -604,8 +636,7 @@ public class FrontendController {
 
                 // Calcul du LocalDateTime précis
                 LocalDateTime finalDateTime = parseFormToLocalDateTime(weekStr, dayFrench, timeStr);
-                
-                // Conversion au format ISO-8601 pour l'envoi JSON
+
                 String isoDateTimeStr = finalDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
                 PlanningDTO planningPayload = new PlanningDTO();
@@ -671,7 +702,6 @@ public class FrontendController {
         }
 
         return "redirect:/coach/home";
-        //return "redirect:/coach/home?success=subscription_created";
     }
 
     

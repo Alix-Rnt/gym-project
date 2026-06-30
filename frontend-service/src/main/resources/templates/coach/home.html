@@ -83,7 +83,7 @@
                 </div>
                 
                 <div style="margin-top: 20px;">
-                    <!-- Boucle sur les vrais abonnements du coach -->
+                    <!-- Boucle sur les abonnements du coach -->
                     <div class="sub-item" th:each="sub : ${mySubscriptions}">
                         <div class="sub-header">
                             <span th:text="${sub.name}">Nom manquant</span>
@@ -94,14 +94,15 @@
                         </div>
                         
                         <!-- Section créneaux/plannings planifiés pour cet abonnement -->
+                        <!--
                         <div style="font-size: 0.85em; color: #999;">
                             <strong>Créneaux planifiés :</strong>
                             <div th:if="${#lists.isEmpty(sub.planningsID)}">Aucun créneau associé.</div>
                             
                             <!-- Boucle mise à jour pour gérer les objets de planning et formater le LocalDateTime -->
+                            <!--
                             <span th:unless="${#lists.isEmpty(sub.planningsID)}" th:each="planning, iterStat : ${sub.planningsID}">
                                 <th:block th:if="${planning.dateTime != null}">
-                                    <!-- Séparation propre : Thymeleaf n'a plus à parser d'apostrophes imbriquées -->
                                     <span th:text="${#temporals.format(planning.dateTime, 'dd/MM/yyyy')}">01/01/2026</span>
                                     <span>à</span>
                                     <span th:text="${#temporals.format(planning.dateTime, 'HH:mm')}">08:30</span>
@@ -110,6 +111,7 @@
                                 <span th:unless="${iterStat.last}">, </span>
                             </span>
                         </div>
+                        -->
                         
                         <div style="margin-top: 10px; text-align: right;">
                             <span class="badge" th:text="'Capacité : ' + ${sub.capacity} + ' max'">Capacité manquante</span>

@@ -57,9 +57,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public Subscription get(UUID id) {
-        return subscriptionRepository
+        Subscription subscription = subscriptionRepository
                 .findById(id)
                 .orElseThrow(() -> new SubscriptionNotFoundException(id));
+        System.out.println("[BOOKING] Get subscription :" + subscription);
+        return subscription;
     }
 
     @Override
@@ -71,7 +73,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         if (subscription.getId() == null) {
             subscription.setId(UUID.randomUUID());
         }
-        subscription.setPlanningsID(new ArrayList<UUID>());
+        subscription.setPlanningsID(dto.getPlanningsID());
         subscription.setMembersID(new ArrayList<UUID>());
         System.out.println("[BOOKING] Entité créée ");
 
